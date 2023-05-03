@@ -144,11 +144,11 @@ public class LoginServiceImpl implements ILoginService {
 			try {
 				CommonTools.printQr(qrPath); // 打开登陆二维码图片
 			} catch (Exception e) {
-				LOG.info(e.getMessage());
+				LOG.info("147---"+e.getMessage());
 			}
 
 		} catch (Exception e) {
-			LOG.info(e.getMessage());
+			LOG.info("151---"+e.getMessage());
 			return false;
 		}
 
@@ -253,20 +253,20 @@ public class LoginServiceImpl implements ILoginService {
 				while (core.isAlive()) {
 					try {
 						Map<String, String> resultMap = syncCheck();
-						LOG.info(JSONObject.toJSONString(resultMap));
+						LOG.info("256---"+JSONObject.toJSONString(resultMap));
 						String retcode = resultMap.get("retcode");
 						String selector = resultMap.get("selector");
 						if (retcode.equals(RetCodeEnum.UNKOWN.getCode())) {
-							LOG.info(RetCodeEnum.UNKOWN.getType());
+							LOG.info("260---"+RetCodeEnum.UNKOWN.getType());
 							continue;
 						} else if (retcode.equals(RetCodeEnum.LOGIN_OUT.getCode())) { // 退出
-							LOG.info(RetCodeEnum.LOGIN_OUT.getType());
+							LOG.info("263---"+RetCodeEnum.LOGIN_OUT.getType());
 							break;
 						} else if (retcode.equals(RetCodeEnum.LOGIN_OTHERWHERE.getCode())) { // 其它地方登陆
-							LOG.info(RetCodeEnum.LOGIN_OTHERWHERE.getType());
+							LOG.info("266---"+RetCodeEnum.LOGIN_OTHERWHERE.getType());
 							break;
 						} else if (retcode.equals(RetCodeEnum.MOBILE_LOGIN_OUT.getCode())) { // 移动端退出
-							LOG.info(RetCodeEnum.MOBILE_LOGIN_OUT.getType());
+							LOG.info("269---"+RetCodeEnum.MOBILE_LOGIN_OUT.getType());
 							break;
 						} else if (retcode.equals(RetCodeEnum.NORMAL.getCode())) {
 							core.setLastNormalRetcodeTime(System.currentTimeMillis()); // 最后收到正常报文时间
@@ -283,7 +283,8 @@ public class LoginServiceImpl implements ILoginService {
 											core.getMsgList().add(baseMsg);
 										}
 									} catch (Exception e) {
-										LOG.info(e.getMessage());
+										e.printStackTrace();
+										LOG.info("286---"+e.getMessage());
 									}
 								}
 							} else if (selector.equals("7")) {
@@ -303,9 +304,10 @@ public class LoginServiceImpl implements ILoginService {
 											JSONObject userInfo = modContactList.getJSONObject(j);
 											// 存在主动加好友之后的同步联系人到本地
 											core.getContactList().add(userInfo);
+											core.getContactMap().put(userInfo.getString("UserName"), userInfo.getString("NickName"));
 										}
 									} catch (Exception e) {
-										LOG.info(e.getMessage());
+										LOG.info("308---"+e.getMessage());
 									}
 								}
 
@@ -314,7 +316,7 @@ public class LoginServiceImpl implements ILoginService {
 							JSONObject obj = webWxSync();
 						}
 					} catch (Exception e) {
-						LOG.info(e.getMessage());
+						LOG.info("317---"+e.getMessage());
 						retryCount += 1;
 						if (core.getReceivingRetryCount() < retryCount) {
 							core.setAlive(false);
@@ -322,7 +324,7 @@ public class LoginServiceImpl implements ILoginService {
 							try {
 								Thread.sleep(1000);
 							} catch (InterruptedException e1) {
-								LOG.info(e.getMessage());
+								LOG.info("325---"+e.getMessage());
 							}
 						}
 					}
@@ -384,13 +386,18 @@ public class LoginServiceImpl implements ILoginService {
 				} else if (o.getString("UserName").indexOf("@@") != -1) { // 群聊
 					if (!core.getGroupIdList().contains(o.getString("UserName"))) {
 						core.getGroupNickNameList().add(o.getString("NickName"));
+						core.getGroupMap().put(o.getString("UserName"), o.getString("NickName"));
 						core.getGroupIdList().add(o.getString("UserName"));
 						core.getGroupList().add(o);
 					}
 				} else if (o.getString("UserName").equals(core.getUserSelf().getString("UserName"))) { // 自己
 					core.getContactList().remove(o);
+
+					core.getContactMap().remove(o.getString("UserName"));
 				} else { // 普通联系人
 					core.getContactList().add(o);
+
+					core.getContactMap().put(o.getString("UserName"), o.getString("NickName"));
 				}
 			}
 			return;
@@ -423,13 +430,14 @@ public class LoginServiceImpl implements ILoginService {
 			for (int i = 0; i < contactList.size(); i++) { // 群好友
 				if (contactList.getJSONObject(i).getString("UserName").indexOf("@@") > -1) { // 群
 					core.getGroupNickNameList().add(contactList.getJSONObject(i).getString("NickName")); // 更新群昵称列表
+					core.getGroupMap().put(contactList.getJSONObject(i).getString("UserName"), contactList.getJSONObject(i).getString("NickName"));
 					core.getGroupList().add(contactList.getJSONObject(i)); // 更新群信息（所有）列表
 					core.getGroupMemeberMap().put(contactList.getJSONObject(i).getString("UserName"),
 							contactList.getJSONObject(i).getJSONArray("MemberList")); // 更新群成员Map
 				}
 			}
 		} catch (Exception e) {
-			LOG.info(e.getMessage());
+			LOG.info("432---"+e.getMessage());
 		}
 	}
 
@@ -491,14 +499,14 @@ public class LoginServiceImpl implements ILoginService {
 				HttpEntity entity = myHttpClient.doGet(originalUrl, null, false, null);
 				text = EntityUtils.toString(entity);
 			} catch (Exception e) {
-				LOG.info(e.getMessage());
+				LOG.info("494---"+e.getMessage());
 				return;
 			}
 			//add by 默非默 2017-08-01 22:28:09
 			//如果登录被禁止时，则登录返回的message内容不为空，下面代码则判断登录内容是否为空，不为空则退出程序
 			String msg = getLoginMessage(text);
 			if (!"".equals(msg)){
-				LOG.info(msg);
+				LOG.info("501---"+msg);
 				System.exit(0);
 			}
 			Document doc = CommonTools.xmlParser(text);
@@ -621,7 +629,7 @@ public class LoginServiceImpl implements ILoginService {
 						synckey.substring(0, synckey.length() - 1));// 1_656161336|2_656161626|3_656161313|11_656159955|13_656120033|201_1492273724|1000_1492265953|1001_1492250432|1004_1491805192
 			}
 		} catch (Exception e) {
-			LOG.info(e.getMessage());
+			LOG.info("624---"+e.getMessage());
 		}
 		return result;
 
@@ -659,7 +667,7 @@ public class LoginServiceImpl implements ILoginService {
 			String regEx = "window.synccheck=\\{retcode:\"(\\d+)\",selector:\"(\\d+)\"\\}";
 			Matcher matcher = CommonTools.getMatcher(regEx, text);
 			if (!matcher.find() || matcher.group(1).equals("2")) {
-				LOG.info(String.format("Unexpected sync check result: %s", text));
+				LOG.info("662---"+String.format("Unexpected sync check result: %s", text));
 			} else {
 				resultMap.put("retcode", matcher.group(1));
 				resultMap.put("selector", matcher.group(2));

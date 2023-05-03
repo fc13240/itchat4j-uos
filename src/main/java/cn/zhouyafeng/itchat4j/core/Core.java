@@ -55,7 +55,8 @@ public class Core {
 	private List<JSONObject> specialUsersList = new ArrayList<JSONObject>();;// 特殊账号
 	private List<String> groupIdList = new ArrayList<String>(); // 群ID列表
 	private List<String> groupNickNameList = new ArrayList<String>(); // 群NickName列表
-
+	private Map<String, String> groupMap = new HashMap<String, String>();
+	private Map<String, String> contactMap = new HashMap<String, String>();
 	private Map<String, JSONObject> userInfoMap = new HashMap<String, JSONObject>();
 
 	Map<String, Object> loginInfo = new HashMap<String, Object>();
@@ -185,6 +186,14 @@ public class Core {
 		this.contactList = contactList;
 	}
 
+	public Map<String, String> getContactMap() {
+		return contactMap;
+	}
+
+	public void setContactMap(Map<String, String> contactMap) {
+		this.contactMap = contactMap;
+	}
+
 	public List<JSONObject> getGroupList() {
 		return groupList;
 	}
@@ -255,6 +264,15 @@ public class Core {
 
 	public void setGroupNickNameList(List<String> groupNickNameList) {
 		this.groupNickNameList = groupNickNameList;
+	}
+
+	
+	public Map<String, String> getGroupMap() {
+		return groupMap;
+	}
+
+	public void setGroupMap(Map<String, String> groupMap) {
+		this.groupMap = groupMap;
 	}
 
 	public Map<String, JSONArray> getGroupMemeberMap() {

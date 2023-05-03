@@ -2,6 +2,7 @@ package cn.zhouyafeng.itchat4j.core;
 
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,12 +54,19 @@ public class MsgCenter {
 				}
 				// 群消息与普通消息不同的是在其消息体（Content）中会包含发送者id及":<br/>"消息，这里需要处理一下，去掉多余信息，只保留消息内容
 				if (m.getString("Content").contains("<br/>")) {
+					String sender=getSenderOfChatRoomTextMessage(m.getString("Content"));
 					String content = m.getString("Content").substring(m.getString("Content").indexOf("<br/>") + 5);
+					m.put("ContentOld", m.getString("Content"));
 					m.put("Content", content);
+					m.put("realsendername", getKey(core.getGroupMemeberMap().get(m.getString("FromUserName")),sender).getString("NickName"));
 					m.put("groupMsg", true);
+					m.put("realfromname",core.getGroupMap().get(m.getString("FromUserName")));
 				}
 			} else {
 				CommonTools.msgFormatter(m, "Content");
+				m.put("ContentOld",m.getString("Content"));
+				m.put("realfromname",core.getContactMap().get(m.getString("FromUserName")));
+				m.put("realsendername",core.getContactMap().get(m.getString("FromUserName")));
 			}
 			if (m.getInteger("MsgType").equals(MsgCodeEnum.MSGTYPE_TEXT.getCode())) { // words
 																						// 文本消息
@@ -106,12 +114,54 @@ public class MsgCenter {
 			} else {
 				LOG.info("Useless msg");
 			}
-			LOG.info("收到消息一条，来自: " + m.getString("FromUserName"));
+			JSONObject sender=new JSONObject();
+			try{
+				sender=getKey(core.getGroupMemeberMap().get(m.getString("FromUserName")),m.getString("sender"));
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			
+			LOG.info("收到消息一条，来自: realfromname: " + m.getString("realfromname") + "------realsendername: "+m.getString("realsendername"));
 			result.add(m);
 		}
 		return result;
 	}
+	private static JSONObject getKey(JSONArray array, String key)
+	{
+		JSONObject value = new JSONObject();
+		if(null!=array){
+	    for (int i = 0; i < array.size(); i++)
+	    {
+	        JSONObject item = array.getJSONObject(i);
+	        if (item.values().contains(key))
+	        {
+	            value = item;
+	            break;
+	        }
+	    }
+		}
+	    return value;
+	}
+	public static String getChatRoomTextMessageContent(String content) {
+        if (content == null) {
+            throw new IllegalArgumentException("content");
+        }
+        return content.replaceAll("^(@([0-9]|[a-z])+):", "")
+                .replaceAll("<br/>", "\r\n");
+    }
 
+    public static String getSenderOfChatRoomTextMessage(String content) {
+        if (content == null) {
+            throw new IllegalArgumentException("content");
+        }
+        Pattern pattern = Pattern.compile("^(@([0-9]|[a-z])+):");
+        Matcher matcher = pattern.matcher(content);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
+    }
+    
 	/**
 	 * 消息处理
 	 * 

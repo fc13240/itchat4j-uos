@@ -51,6 +51,11 @@ public class BaseMsg implements Serializable {
 	private String oriContent;
 	private String fileSize;
 
+	/** custom **/
+	private String contentOld;
+	private String realFromName;
+	private String realSenderName;
+
 	public int getSubMsgType() {
 		return subMsgType;
 	}
@@ -290,4 +295,29 @@ public class BaseMsg implements Serializable {
 	public void setFileSize(String fileSize) {
 		this.fileSize = fileSize;
 	}
+
+	public String getContentOld() {
+		return contentOld;
+	}
+
+	public void setContentOld(String contentOld) {
+		this.contentOld = contentOld;
+	}
+
+	public String getRealFromName() {
+		return realFromName;
+	}
+
+	public void setRealFromName(String realFromName) {
+		this.realFromName = realFromName;
+	}
+
+	public String getRealSenderName() {
+		return realSenderName;
+	}
+
+	public void setRealSenderName(String realSenderName) {
+		this.realSenderName = realSenderName;
+	}
+
 }
